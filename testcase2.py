@@ -1,9 +1,9 @@
 # coding: utf8
 
-from simple_load_test import *
+from simple_load_test import make_data, batch_request
 
 HOST = 'http://localhost:3000'
-REQS_TOTAL_COUNT = 1
+CONCURRENT_NUM = 1
 
 def login(user, pwd):
     print 'login user: %s' % user
@@ -32,13 +32,13 @@ def get_tokens():
             account['password']
         )
         token_list.append(token)
-    REQS_TOTAL_COUNT = len(token_list)
+    CONCURRENT_NUM = len(token_list)
     return tuple(token_list)
 
 def post_weapon_fire():
     url = HOST + "/api/games/weapon_fire.json"
     reqs, headers = weapon_fire_params()
-    batch_request(url, reqs, headers=headers, method='POST', reqs_total_count=REQS_TOTAL_COUNT, workers_num=REQS_TOTAL_COUNT)
+    batch_request(url, reqs, headers=headers, method='POST', workers_num=CONCURRENT_NUM)
 
 def weapon_fire_params():
     params = {

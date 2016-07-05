@@ -31,15 +31,13 @@ Content-Length: length
 To test this webservice, we can write test like this:
 
 ```python
-CONCURRENT_NUM = 3
-
-def get_getWeatherbyCityName():
+def get_getWeatherbyCityName(concurrent_num):
     url = HOST + "/WebServices/WeatherWebService.asmx/getWeatherbyCityName"
     params = {
         'theCityName': ("广州","深圳"),
     }
     reqs = make_data(params)
-    batch_request(url, reqs, method='GET', workers_num=CONCURRENT_NUM)
+    batch_request(url, reqs, method='GET', workers_num=concurrent_num)
 ```
 
 ## make POST load test
@@ -72,16 +70,14 @@ Content-Length: length
 To test this webservice, we can write test like this:
 
 ```python
-CONCURRENT_NUM = 5
-
-def post_getWeatherbyCityName():
+def post_getWeatherbyCityName(concurrent_num):
     url = HOST + "/WebServices/WeatherWebService.asmx/getWeatherbyCityName"
     params = {
         'theCityName': ("广州","深圳"),
     }
     reqs = make_data(params)
     headers = {'content-type': 'application/x-www-form-urlencoded'}
-    batch_request(url, reqs, headers, method='POST', workers_num=CONCURRENT_NUM)
+    batch_request(url, reqs, headers, method='POST', workers_num=concurrent_num)
 ```
 
 ## Run tests
