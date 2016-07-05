@@ -1,6 +1,6 @@
 # coding: utf8
 
-from utils import *
+from simple_load_test import *
 
 HOST = 'http://localhost:3000'
 REQS_TOTAL_COUNT = 1
@@ -54,4 +54,4 @@ def weapon_fire_params():
 
 
 if __name__ == '__main__':
-    post_weapon_fire(game_id)
+    post_weapon_fire()

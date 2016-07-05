@@ -1,5 +1,8 @@
 # coding: utf8
 
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
 from gevent import monkey; monkey.patch_all()
 import gevent
 from gevent.queue import Queue
@@ -36,10 +39,9 @@ def make_data(data):
 def request_worker(url, headers, tasks, method="POST", worker=0):
     while not tasks.empty():
         req = tasks.get()
-        req = json.dumps(req).strip()
-        if method = 'GET':
+        if method == 'GET':
             res = requests.get(url, headers=headers, params=req)
-        elif method = 'POST':
+        elif method == 'POST':
             res = requests.post(url, headers=headers, data=req)
         else:
             raise "Only support GET and POST method!"
@@ -50,8 +52,8 @@ def request_worker(url, headers, tasks, method="POST", worker=0):
         else:
             print "worker %d finished one request!\n" % worker
 
-def batch_request(url, reqs, headers={}, method='POST', reqs_total_count=1, workers_num=1):
-    reqs = list(reqs) * reqs_total_count
+def batch_request(url, reqs, headers={}, method='POST', workers_num=1):
+    reqs = list(reqs) * workers_num
 
     tasks = Queue()
     for req in reqs:
