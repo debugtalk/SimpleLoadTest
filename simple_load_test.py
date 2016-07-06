@@ -53,6 +53,9 @@ def request_worker(url, headers, tasks, method="POST", worker=0):
             print "worker %d finished one request!\n" % worker
 
 def batch_request(url, reqs, headers={}, method='POST', workers_num=1):
+    if "content-type" in headers and headers["content-type"] == "application/json":
+        reqs = [json.dumps(req).strip() for req in reqs]
+
     reqs = list(reqs) * workers_num
 
     tasks = Queue()
