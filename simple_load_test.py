@@ -56,6 +56,11 @@ def request_worker(url, reqs_queue, config, worker=0):
         print "elapsed time: %s" % (time()-start)
         print "response: \n%s\n" % res.text
 
+        # check validation of response
+        response = res.text
+        valid_expression = config["expected"]
+        assert eval(valid_expression) == True
+
         if interval_time is not None:
             sleep(interval_time)
 
@@ -74,6 +79,9 @@ def batch_request(url, reqs, config={}, workers_num=1):
 
     if "method" not in config:
         config["method"] = "POST"
+
+    if "expected" not in config:
+        config["expected"] = "True"
 
     reqs_queue = Queue()
 

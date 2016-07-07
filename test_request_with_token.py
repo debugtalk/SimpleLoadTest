@@ -1,6 +1,6 @@
 # coding: utf8
 
-from simple_load_test import make_data, batch_request
+from simple_load_test import *
 
 HOST = 'http://localhost:3000'
 CONCURRENT_NUM = 1
@@ -41,7 +41,8 @@ def post_weapon_fire():
     reqs, headers = weapon_fire_params()
     config = {
         "headers": headers,
-        "method": "POST"
+        "method": "POST",
+        "expected": "'\"status\":0' in response"
     }
     batch_request(url, reqs, config=config, workers_num=CONCURRENT_NUM)
 
