@@ -32,21 +32,26 @@ def get_tokens():
             account['password']
         )
         token_list.append(token)
+    global CONCURRENT_NUM
     CONCURRENT_NUM = len(token_list)
     return tuple(token_list)
 
 def post_weapon_fire():
     url = HOST + "/api/games/weapon_fire.json"
     reqs, headers = weapon_fire_params()
-    batch_request(url, reqs, headers=headers, method='POST', workers_num=CONCURRENT_NUM)
+    config = {
+        "headers": headers,
+        "method": "POST"
+    }
+    batch_request(url, reqs, config=config, workers_num=CONCURRENT_NUM)
 
 def weapon_fire_params():
     params = {
         'token': get_tokens(),
-        'robot_id': (1,2,3),
-        'bullets_type': (1,2,3,4),
+        'robot_id': (1,3,5,7,9),
+        'bullets_type': (1,2,3),
         'speed': (20,30),
-        'frequence': (5,8,10)
+        'frequence': (1,2)
     }
     reqs = make_data(params)
     headers = {"content-type": "application/json"}

@@ -7,7 +7,7 @@ from gevent import monkey; monkey.patch_all()
 import gevent
 from gevent.queue import Queue
 
-from time import time
+from time import time, sleep
 from datetime import datetime
 import json
 import requests
@@ -36,38 +36,56 @@ def make_data(data):
     for values in itertools.product(*data.values()):
         yield dict(zip(keys, values))
 
-def request_worker(url, headers, tasks, method="POST", worker=0):
-    while not tasks.empty():
-        req = tasks.get()
+def request_worker(url, reqs_queue, config, worker=0):
+    headers = config["headers"]
+    method = config["method"]
+    interval_time = config["interval_time"]
+
+    while not reqs_queue.empty():
+        req = reqs_queue.get()
+        start = time()
+        print "worker %d --- %s request: %s time: %s\n%s\n" % (worker, method, url, datetime.now() , req)
+
         if method == 'GET':
             res = requests.get(url, headers=headers, params=req)
         elif method == 'POST':
             res = requests.post(url, headers=headers, data=req)
         else:
             raise "Only support GET and POST method!"
-        print "%s request: %s time: %s\n%s\n" % (method, url, datetime.now() , req)
-        print "response: \n%s" % res.text
+
+        print "elapsed time: %s" % (time()-start)
+        print "response: \n%s\n" % res.text
+
+        if interval_time is not None:
+            sleep(interval_time)
+
         if not res.ok:
-            print "Error! Status Code: %s" % res.text
-        else:
-            print "worker %d finished one request!\n" % worker
+            print "Error! Status Code: %s" % res.status_code
 
-def batch_request(url, reqs, headers={}, method='POST', workers_num=1):
-    if "content-type" in headers and headers["content-type"] == "application/json":
-        reqs = [json.dumps(req).strip() for req in reqs]
+def batch_request(url, reqs, config={}, workers_num=1):
+    if "interval_time" not in config:
+        config["interval_time"] = None
 
-    reqs = list(reqs) * workers_num
+    if "headers" not in config:
+        config["headers"] = {}
+    elif "content-type" in config["headers"]:
+        if config["headers"]["content-type"] == "application/json":
+            reqs = [json.dumps(req).strip() for req in reqs]
 
-    tasks = Queue()
+    if "method" not in config:
+        config["method"] = "POST"
+
+    reqs_queue = Queue()
+
     for req in reqs:
-        tasks.put_nowait(req)
+        reqs_queue.put_nowait(req)
 
-    count = tasks.qsize()
+    count = reqs_queue.qsize()
 
-    workers = [gevent.spawn(request_worker, url, headers, tasks, method=method, worker=worker) for worker in range(workers_num)]
+    workers = [gevent.spawn(request_worker, url, reqs_queue, config, worker=worker) for worker in range(workers_num)]
     start = time()
     # send requests at the same time
     gevent.joinall(workers)
     # Response.elapsed for a single request, offered by requests
-    print "total requests: %d" % (count)
-    print "elapsed time: %s\n" % (time()-start)
+    print "total requests number: %d" % (count)
+    print "total elapsed time: %s\n" % (time()-start)
